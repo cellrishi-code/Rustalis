@@ -1,21 +1,10 @@
 [package]
-name = "rustalis-kernel"
+name = "kernel"
 version = "0.1.0"
-edition = "2021"
-authors = ["Rustalis contributors"]
-description = "Rustalis kernel for the Rust-first operating system"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-bootloader_api = "0.11"
-uart_16550 = "0.3"
+bootloader_api = "0.11.17"
+uart_16550 = "0.3.2"
 spin = "0.9"
-
-[build-dependencies]
-bootloader = "0.11"
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"

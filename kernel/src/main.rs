@@ -14,6 +14,8 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     logger::info("Rustalis kernel starting");
     logger::info("Architecture: x86_64");
     logger::info("Boot information received");
+    arch::x86_64::init();
+    logger::info("x86_64 architecture layer initialized");
     let _ = boot_info.memory_regions.len();
     logger::info("Memory map is available");
     logger::info("Rustalis booted successfully.");

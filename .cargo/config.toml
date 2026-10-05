@@ -1,9 +1,2 @@
-[build]
-target = "x86_64-unknown-none"
-
-[target.x86_64-unknown-none]
-rustflags = ["-C", "code-model=kernel", "-C", "relocation-model=static"]
-
 [unstable]
 bindeps = true
-build-std = ["core", "compiler_builtins"]

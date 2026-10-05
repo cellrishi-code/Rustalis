@@ -6,6 +6,7 @@ use core::panic::PanicInfo;
 
 mod arch;
 mod logger;
+mod memory;
 
 entry_point!(kernel_main);
 
@@ -16,8 +17,10 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     logger::info("Boot information received");
     arch::x86_64::init();
     logger::info("x86_64 architecture layer initialized");
-    let _ = boot_info.memory_regions.len();
-    logger::info("Memory map is available");
+    let summary = memory::summarize(&boot_info.memory_regions);
+    logger::info_u64("Memory regions", summary.region_count as u64);
+    logger::info_u64("Usable memory bytes", summary.usable_bytes);
+    logger::info_u64("Reserved memory bytes", summary.reserved_bytes);
     logger::info("Rustalis booted successfully.");
     loop { core::hint::spin_loop(); }
 }

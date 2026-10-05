@@ -74,6 +74,16 @@ User Space
 
 Only subsystems that are actually implemented should be advertised as supported.
 
+## Current boot diagnostics
+
+At boot the kernel now inspects the bootloader memory map and reports:
+
+- number of memory regions
+- usable physical memory in bytes
+- reserved/non-usable memory in bytes
+
+This is the first kernel-owned memory abstraction. It does not yet allocate frames or manipulate page tables.
+
 ## Roadmap
 
 1. Foundation and verified boot

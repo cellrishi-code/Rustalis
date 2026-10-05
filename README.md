@@ -1,120 +1,217 @@
 # Rustalis
 
-**Rustalis** is a Rust-first operating system project targeting a real, bootable x86_64 system, with QEMU as the primary development environment.
+**Rustalis** is an open-source, Rust-first operating-system project for building a real x86_64 OS from the boot path upward.
 
-The project is being built incrementally. Each milestone must compile and remain understandable before the next kernel subsystem is introduced.
+> Experimental systems software. Rustalis is not production-ready and must not be treated as a security boundary.
 
-## Current milestone: 0 — Foundation
+[![CI](https://github.com/cellrishi-code/Rustalis/actions/workflows/rust.yml/badge.svg)](https://github.com/cellrishi-code/Rustalis/actions/workflows/rust.yml)
 
-Implemented:
+## Vision
 
-- Rust workspace with a dedicated kernel crate
-- `no_std` / `no_main` kernel
-- x86_64 bare-metal target
-- bootloader API entry point
-- boot information reception
-- serial logging
-- kernel panic handler
-- x86_64 architecture boundary
-- UEFI/BIOS disk-image generation through the Rust `bootloader` crate
-- QEMU runner with OVMF support
-
-The next verification step is to build and boot the generated UEFI image locally and capture the serial output:
+Rustalis aims to provide a complete operating-system stack:
 
 ```text
-[INFO] Rustalis kernel starting
-[INFO] Architecture: x86_64
-[INFO] Boot information received
-[INFO] Memory map is available
-[INFO] Rustalis booted successfully.
+Firmware / Bootloader
+        ↓
+Rust Kernel
+        ↓
+Memory + Interrupts
+        ↓
+Processes + Scheduler
+        ↓
+Syscalls
+        ↓
+User Space + Shell
+        ↓
+VFS + Storage + Drivers
+        ↓
+Networking + Security + SMP
+        ↓
+Developer Tools + Package Manager
 ```
 
-## Run
+The project is deliberately incremental. A subsystem is only marked complete after a real implementation and an appropriate verification path exist.
 
-Install QEMU with `qemu-system-x86_64`, then:
+## Current status
+
+### Foundation
+- [x] Cargo workspace
+- [x] `no_std` kernel
+- [x] x86_64 target
+- [x] Bootloader integration
+- [x] Serial logging and panic reporting
+- [x] Boot memory-map summary
+- [x] QEMU launcher
+- [x] Open-source license and contribution documentation
+
+### CPU and exceptions
+- [x] x86_64 architecture boundary
+- [x] Interrupt subsystem boundary
+- [ ] GDT / TSS
+- [ ] IDT
+- [ ] Exception handlers
+- [ ] Double-fault stack
+
+### Memory
+- [ ] Physical frame allocator
+- [ ] Page-table abstraction
+- [ ] Virtual memory manager
+- [ ] Page-fault handling
+- [ ] Kernel heap
+
+### Kernel services
+- [ ] APIC and timers
+- [ ] Threads and context switching
+- [ ] Preemptive scheduler
+- [ ] Syscall ABI
+- [ ] Processes and isolation
+
+### User space
+- [ ] Init process
+- [ ] Core utilities
+- [ ] `ferrosh` shell
+- [ ] File descriptors
+- [ ] Pipes and redirection
+
+### Storage
+- [ ] VFS
+- [ ] Initial filesystem
+- [ ] Block-device layer
+- [ ] Device-driver framework
+
+### Networking
+- [ ] Ethernet
+- [ ] ARP
+- [ ] IPv4
+- [ ] ICMP
+- [ ] UDP
+- [ ] TCP
+- [ ] Sockets
+- [ ] DHCP / DNS / IPv6
+
+### Security and scalability
+- [ ] UID/GID permissions
+- [ ] Capability model
+- [ ] Kernel/user isolation
+- [ ] Syscall validation
+- [ ] W^X
+- [ ] Stack protection
+- [ ] ASLR where practical
+- [ ] SMP / per-CPU state
+
+### Developer experience
+- [ ] Package manager (`fpm`)
+- [ ] Developer tools
+- [ ] Automated QEMU integration tests
+- [ ] Reproducible release images
+- [ ] Optional graphical compositor
+
+## Getting started
+
+### Prerequisites
+
+- Rust nightly
+- Cargo
+- QEMU x86_64
+- Git
+
+The repository contains `rust-toolchain.toml`, so Rustup can install the required toolchain automatically.
+
+### Check the workspace
+
+```bash
+cargo fmt --all -- --check
+cargo check --workspace
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+```
+
+### Build
 
 ```bash
 cargo build
+```
+
+### Run in QEMU
+
+UEFI:
+
+```bash
 cargo run -- uefi
 ```
 
-For legacy BIOS testing:
+BIOS:
 
 ```bash
 cargo run -- bios
 ```
 
-The UEFI path uses OVMF through `ovmf-prebuilt`.
+On Windows PowerShell:
 
-## Architecture
-
-```text
-UEFI
-  |
-Bootloader
-  |
-Rustalis Kernel
-  +-- arch/x86_64
-  +-- memory
-  +-- interrupt
-  +-- scheduler
-  +-- process
-  +-- syscall
-  +-- ipc
-  +-- filesystem
-  +-- networking
-  +-- drivers
-  +-- security
-  |
-User Space
-  +-- init
-  +-- ferrosh
-  +-- core utilities
+```powershell
+cargo run -- uefi
 ```
 
-Only subsystems that are actually implemented should be advertised as supported.
+## Contributing
 
-## Current boot diagnostics
+Rustalis is intended to be a genuine open-source collaboration project. Start with the issue tracker before implementing a large subsystem.
 
-At boot the kernel now inspects the bootloader memory map and reports:
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md).
+2. Read [docs/architecture.md](docs/architecture.md).
+3. Pick an open issue or propose a new one.
+4. Create a branch.
+5. Implement the smallest coherent subsystem.
+6. Add tests and safety documentation.
+7. Run formatting, check, clippy, and tests.
+8. Add QEMU verification when relevant.
+9. Open a pull request using the repository template.
 
-- number of memory regions
-- usable physical memory in bytes
-- reserved/non-usable memory in bytes
+Good first contributions include documentation, tests, architecture diagrams, CI improvements, small kernel abstractions, and carefully scoped subsystem work.
 
-This is the first kernel-owned memory abstraction. It does not yet allocate frames or manipulate page tables.
+## Project structure
 
-## Roadmap
+```text
+.
+├── kernel/
+│   └── src/
+│       ├── arch/
+│       │   └── x86_64/
+│       ├── memory/
+│       ├── logger.rs
+│       └── main.rs
+├── docs/
+├── scripts/
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/
+└── src/
+    └── main.rs
+```
 
-1. Foundation and verified boot
-2. GDT, IDT and exception handling
-3. Physical frame allocator
-4. x86_64 virtual memory
-5. Kernel heap
-6. Interrupts and timers
-7. Threads and context switching
-8. Preemptive scheduler
-9. Syscalls and user space
-10. VFS and storage
-11. Device drivers
-12. Networking
-13. Security hardening
-14. SMP
-15. Optional graphics
-16. Package manager
-17. Developer tooling
+## Engineering principles
 
-## Development principles
+- Rust first; assembly only where the architecture requires it.
+- `no_std` kernel.
+- Minimize and document `unsafe`.
+- Never trust user-space memory.
+- Prefer explicit `Result` / `Option` over unchecked failure.
+- No fake implementations or fake verification.
+- Preserve working functionality when adding subsystems.
+- Document architectural decisions.
+- Verify through unit tests, integration tests, and QEMU where appropriate.
 
-- Rust first; assembly only where architecture requires it.
-- Every `unsafe` block must have a safety argument.
-- No fake implementations or fake success messages.
-- Kernel and user space remain separated.
-- Hardware-dependent code stays behind clear interfaces.
-- Keep the OS bootable at every milestone.
-- Prefer explicit errors and documented invariants.
-- Run `cargo fmt`, `cargo clippy`, and tests continuously.
+## Roadmap and issues
+
+The GitHub issue tracker is the authoritative implementation backlog. Major kernel, memory, scheduler, syscall, storage, networking, security, SMP, user-space, testing, and release milestones are tracked there.
 
 ## License
 
-Dual-licensed under MIT OR Apache-2.0.
+Rustalis is dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE).
+
+## Community
+
+Please use the issue templates for bugs and subsystem proposals. Follow the [Code of Conduct](CODE_OF_CONDUCT.md) and use [SECURITY.md](SECURITY.md) for security reports.
+
+---
+
+**Rustalis is built in the open. If you want to learn operating-system engineering by contributing real code, pick an issue and build with us.**

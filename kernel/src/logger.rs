@@ -27,6 +27,12 @@ pub fn error(message: &str) {
     write_line("ERROR", message);
 }
 
+pub fn info_u64(label: &str, value: u64) {
+    if let Some(serial) = SERIAL1.lock().as_mut() {
+        let _ = writeln!(serial, "[INFO] {label}: {value}");
+    }
+}
+
 pub fn panic_info(info: &core::panic::PanicInfo<'_>) {
     if let Some(serial) = SERIAL1.lock().as_mut() {
         let _ = writeln!(serial, "{info}");

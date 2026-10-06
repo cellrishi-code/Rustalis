@@ -2,6 +2,9 @@
 resolver = "3"
 members = ["kernel"]
 
+[features]
+exception-self-test = ["kernel/exception-self-test"]
+
 [package]
 name = "rustalis"
 version = "0.1.0"

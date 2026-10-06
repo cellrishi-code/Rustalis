@@ -28,6 +28,15 @@ arch -> interrupt -> scheduler -> process -> syscall -> user space
 
 These are architectural targets, not claims that those subsystems are implemented yet.
 
+## Exception handling
+
+The x86_64 interrupt layer now installs a static IDT with handlers for:
+
+- Vector 3: breakpoint (`#BP` / `INT3`), which logs the saved interrupt frame and resumes execution.
+- Vector 6: invalid opcode (`#UD`), which logs the faulting instruction pointer and enters the kernel panic path.
+
+The `exception-self-test` Cargo feature triggers `INT3` during boot so the breakpoint path can be exercised without making the normal boot path intentionally fault.
+
 ## Boot invariant
 
 Every milestone must leave a bootable kernel or a clearly documented reason why the milestone temporarily cannot boot. No placeholder subsystem should report successful initialization.

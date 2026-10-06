@@ -48,7 +48,7 @@ The project is deliberately incremental. A subsystem is only marked complete aft
 - [x] x86_64 architecture boundary
 - [x] Interrupt subsystem boundary
 - [ ] GDT / TSS
-- [ ] IDT
+- [x] IDT (breakpoint and invalid-opcode entries)
 - [ ] Exception handlers
 - [ ] Double-fault stack
 
@@ -130,6 +130,12 @@ cargo test --workspace
 
 ```bash
 cargo build
+
+Optional breakpoint exception smoke test:
+
+```bash
+cargo build --features exception-self-test
+```
 ```
 
 ### Run in QEMU

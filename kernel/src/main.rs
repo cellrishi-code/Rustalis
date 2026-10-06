@@ -1,3 +1,5 @@
+#![feature(abi_x86_interrupt)]
+
 #![no_std]
 #![no_main]
 
@@ -17,6 +19,12 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     logger::info("Boot information received");
     arch::x86_64::init();
     logger::info("x86_64 architecture layer initialized");
+    #[cfg(feature = "exception-self-test")]
+    {
+        logger::info("Running breakpoint exception self-test");
+        arch::x86_64::idt::self_test();
+        logger::info("Breakpoint exception self-test passed");
+    }
     let summary = memory::summarize(&boot_info.memory_regions);
     logger::info_u64("Memory regions", summary.region_count as u64);
     logger::info_u64("Usable memory bytes", summary.usable_bytes);

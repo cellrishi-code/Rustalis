@@ -6,4 +6,5 @@ pub mod idt;
 /// Initialize CPU-specific facilities that are safe to establish at boot.
 pub fn init() {
     interrupts::init();
+    idt::init();
 }

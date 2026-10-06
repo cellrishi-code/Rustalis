@@ -35,7 +35,7 @@ The x86_64 interrupt layer now installs a static IDT with handlers for:
 - Vector 3: breakpoint (`#BP` / `INT3`), which logs the saved interrupt frame and resumes execution.
 - Vector 6: invalid opcode (`#UD`), which logs the faulting instruction pointer and enters the kernel panic path.
 
-The `exception-self-test` Cargo feature triggers `INT3` during boot so the breakpoint path can be exercised without making the normal boot path intentionally fault.
+The `exception-self-test` Cargo feature triggers `INT3` during boot so the breakpoint path can be exercised without making the normal boot path intentionally fault. The `divide-error-self-test` feature deliberately executes an integer divide by zero to exercise the #DE path; it is opt-in because the handler intentionally terminates through the kernel panic path.
 
 ## Boot invariant
 

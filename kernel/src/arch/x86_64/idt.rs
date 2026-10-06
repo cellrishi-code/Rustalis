@@ -23,6 +23,12 @@ pub fn init() {
     idt.load();
 }
 
+/// Trigger INT3 for the optional boot-time exception self-test.
+#[cfg(feature = "exception-self-test")]
+pub fn self_test() {
+    x86_64::instructions::interrupts::int3();
+}
+
 /// Handle INT3/#BP without modifying the saved execution state.
 extern "x86-interrupt" fn breakpoint_handler(frame: InterruptStackFrame) {
     crate::logger::info("BREAKPOINT exception (#BP)");

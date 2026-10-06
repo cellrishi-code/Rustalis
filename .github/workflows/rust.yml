@@ -39,4 +39,4 @@ jobs:
       - name: Install QEMU
         run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
       - name: Build boot image
-        run: cargo build --features exception-self-test --verbose
+        run: cargo build --features "exception-self-test divide-error-self-test" --verbose

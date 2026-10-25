@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use bootloader_api::{entry_point, BootInfo};
+use bootloader_api::{BootInfo, entry_point};
 use core::panic::PanicInfo;
 
 mod arch;

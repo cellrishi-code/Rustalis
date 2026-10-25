@@ -1,6 +1,6 @@
 use ovmf_prebuilt::{Arch, FileType, Prebuilt, Source};
 use std::env;
-use std::process::{exit, Command};
+use std::process::{Command, exit};
 
 fn main() {
     let uefi_path = env!("UEFI_PATH");
@@ -24,15 +24,23 @@ fn main() {
     cmd.args(["-serial", "mon:stdio", "-display", "none"]);
 
     if uefi {
-        let prebuilt = Prebuilt::fetch(Source::LATEST, "target/ovmf")
-            .expect("failed to obtain OVMF firmware");
+        let prebuilt =
+            Prebuilt::fetch(Source::LATEST, "target/ovmf").expect("failed to obtain OVMF firmware");
         let code = prebuilt.get_file(Arch::X64, FileType::Code);
         let vars = prebuilt.get_file(Arch::X64, FileType::Vars);
-        cmd.arg("-drive").arg(format!("format=raw,file={uefi_path}"));
-        cmd.arg("-drive").arg(format!("if=pflash,format=raw,unit=0,file={},readonly=on", code.display()));
-        cmd.arg("-drive").arg(format!("if=pflash,format=raw,unit=1,file={},snapshot=on", vars.display()));
+        cmd.arg("-drive")
+            .arg(format!("format=raw,file={uefi_path}"));
+        cmd.arg("-drive").arg(format!(
+            "if=pflash,format=raw,unit=0,file={},readonly=on",
+            code.display()
+        ));
+        cmd.arg("-drive").arg(format!(
+            "if=pflash,format=raw,unit=1,file={},snapshot=on",
+            vars.display()
+        ));
     } else {
-        cmd.arg("-drive").arg(format!("format=raw,file={bios_path}"));
+        cmd.arg("-drive")
+            .arg(format!("format=raw,file={bios_path}"));
     }
 
     let status = cmd.status().expect("failed to start qemu-system-x86_64");

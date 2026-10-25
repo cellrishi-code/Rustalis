@@ -152,6 +152,8 @@ On Windows PowerShell:
 cargo run -- uefi
 ```
 
+For common toolchain, QEMU, firmware, and boot troubleshooting, see [docs/troubleshooting.md](docs/troubleshooting.md).
+
 ## Contributing
 
 Rustalis is intended to be a genuine open-source collaboration project. Start with the issue tracker before implementing a large subsystem.

@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use bootloader_api::{entry_point, BootInfo};
+use bootloader_api::{BootInfo, entry_point};
 use core::panic::PanicInfo;
 
 mod arch;
@@ -34,10 +34,15 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         logger::info("RAM filesystem initialized; /welcome.txt verified");
         logger::info_u64("RAM filesystem files", ramfs.file_count() as u64);
     } else {
-        logger::error("RAM filesystem smoke test failed");
+        logger::error("RAM filesystem smoke test failed; boot success withheld");
+        loop {
+            core::hint::spin_loop();
+        }
     }
 
-    logger::info("Rustalis booted successfully.");
+    // This marker is a CI/debugging contract: emit it only after early init and
+    // the RAM filesystem smoke test have completed successfully.
+    logger::info("[BOOT_OK] Rustalis booted successfully.");
     loop {
         core::hint::spin_loop();
     }

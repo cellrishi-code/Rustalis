@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn empty_memory_map_has_zero_totals() {
         assert_eq!(
-            summarize_regions([]),
+            summarize_regions(core::iter::empty::<(MemoryRegionKind, u64, u64)>()),
             MemorySummary {
                 usable_bytes: 0,
                 reserved_bytes: 0,

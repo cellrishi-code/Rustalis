@@ -28,7 +28,7 @@ jobs:
         run: cargo test --workspace
 
   qemu:
-    name: Build boot image
+    name: Build and boot smoke test
     runs-on: ubuntu-latest
     needs: check
     steps:
@@ -40,3 +40,23 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
       - name: Build boot image
         run: cargo build --verbose
+      - name: Boot BIOS image and assert serial success marker
+        shell: bash
+        run: |
+          set +e
+          timeout --signal=TERM --kill-after=5s 20s cargo run -- bios > qemu.log 2>&1
+          status=$?
+          set -e
+          cat qemu.log
+
+          if ! grep -Fq "[BOOT_OK] Rustalis booted successfully." qemu.log; then
+            echo "Kernel did not emit the expected boot-success marker."
+            exit 1
+          fi
+
+          # A healthy kernel intentionally remains in its idle loop; timeout
+          # is therefore expected after the marker has been observed.
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            echo "QEMU runner exited unexpectedly with status $status."
+            exit "$status"
+          fi

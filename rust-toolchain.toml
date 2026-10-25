@@ -1,5 +1,5 @@
 [toolchain]
 channel = "nightly"
-components = ["llvm-tools-preview", "rustfmt", "clippy"]
+components = ["llvm-tools-preview", "rustfmt", "clippy", "rust-src"]
 targets = ["x86_64-unknown-none", "x86_64-unknown-uefi"]
 profile = "minimal"

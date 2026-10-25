@@ -3,8 +3,10 @@
 //! This is a RAM-backed prototype, not persistent storage. It deliberately avoids
 //! allocation so it can be used before the kernel heap and block-device layer exist.
 
-const MAX_PATH_BYTES: usize = 64;
-const MAX_FILE_BYTES: usize = 256;
+/// Maximum path length in bytes, including the leading slash.
+pub const MAX_PATH_BYTES: usize = 64;
+/// Maximum file content size in bytes.
+pub const MAX_FILE_BYTES: usize = 256;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FsError {
@@ -17,6 +19,9 @@ pub enum FsError {
 }
 
 /// A small, allocation-free filesystem suitable for kernel bring-up.
+///
+/// Each slot stores a fixed-size path and content buffer. On x86_64, an entry
+/// currently occupies approximately 344 bytes; exact layout is compiler-dependent.
 pub struct RamFs<const FILES: usize> {
     entries: [Entry; FILES],
 }
@@ -128,7 +133,7 @@ fn validate_path(path: &str) -> Result<&str, FsError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{FsError, RamFs};
+    use super::{FsError, MAX_FILE_BYTES, MAX_PATH_BYTES, RamFs};
 
     #[test]
     fn create_write_read_and_remove() {
@@ -156,7 +161,54 @@ mod tests {
         fs.create("/a").unwrap();
         assert_eq!(fs.create("/b"), Err(FsError::NoFreeSlots));
         fs.write("/a", b"ok").unwrap();
-        assert_eq!(fs.write("/a", &[0; 257]), Err(FsError::FileTooLarge));
+        assert_eq!(fs.write("/a", &[0; MAX_FILE_BYTES + 1]), Err(FsError::FileTooLarge));
         assert_eq!(fs.read("/a").unwrap(), b"ok");
+    }
+
+    #[test]
+    fn handles_empty_files_and_content_replacement_boundaries() {
+        let mut fs = RamFs::<1>::new();
+        fs.create("/data").unwrap();
+        assert_eq!(fs.read("/data").unwrap(), b"");
+
+        let maximum = [b'x'; MAX_FILE_BYTES];
+        fs.write("/data", &maximum).unwrap();
+        assert_eq!(fs.read("/data").unwrap(), &maximum);
+
+        fs.write("/data", b"short").unwrap();
+        assert_eq!(fs.read("/data").unwrap(), b"short");
+
+        assert_eq!(
+            fs.write("/data", &[b'z'; MAX_FILE_BYTES + 1]),
+            Err(FsError::FileTooLarge)
+        );
+        assert_eq!(fs.read("/data").unwrap(), b"short");
+    }
+
+    #[test]
+    fn rejects_malformed_paths_without_consuming_slots() {
+        let mut fs = RamFs::<2>::new();
+        fs.create("/keep").unwrap();
+
+        for path in ["relative", "/", "/trailing/", "/a//b", "/./a", "/a/../b"] {
+            assert_eq!(fs.create(path), Err(FsError::InvalidPath), "path: {path}");
+        }
+
+        assert_eq!(fs.file_count(), 1);
+        assert_eq!(fs.read("/keep").unwrap(), b"");
+        assert_eq!(fs.create("/b"), Ok(()));
+        assert_eq!(fs.file_count(), 2);
+    }
+
+    #[test]
+    fn accepts_maximum_path_and_rejects_one_byte_over() {
+        let mut fs = RamFs::<2>::new();
+        let maximum = format!("/{}", "a".repeat(MAX_PATH_BYTES - 1));
+        let too_long = format!("/{}", "a".repeat(MAX_PATH_BYTES));
+
+        assert_eq!(maximum.len(), MAX_PATH_BYTES);
+        assert_eq!(fs.create(&maximum), Ok(()));
+        assert_eq!(fs.create(&too_long), Err(FsError::PathTooLong));
+        assert_eq!(fs.file_count(), 1);
     }
 }

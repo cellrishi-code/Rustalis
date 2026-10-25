@@ -13,7 +13,11 @@ pub struct MemorySummary {
 }
 
 pub fn summarize(regions: &MemoryRegions) -> MemorySummary {
-    summarize_regions(regions.iter().map(|region| (region.kind, region.start, region.end)))
+    summarize_regions(
+        regions
+            .iter()
+            .map(|region| (region.kind, region.start, region.end)),
+    )
 }
 
 fn summarize_regions(

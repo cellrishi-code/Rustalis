@@ -1,6 +1,6 @@
 use ovmf_prebuilt::{Arch, FileType, Prebuilt, Source};
 use std::env;
-use std::process::{exit, Command};
+use std::process::{Command, exit};
 
 const USAGE: &str = "Usage: cargo run -- [uefi|bios]";
 
@@ -59,7 +59,8 @@ fn main() {
             });
             let code = prebuilt.get_file(Arch::X64, FileType::Code);
             let vars = prebuilt.get_file(Arch::X64, FileType::Vars);
-            cmd.arg("-drive").arg(format!("format=raw,file={uefi_path}"));
+            cmd.arg("-drive")
+                .arg(format!("format=raw,file={uefi_path}"));
             cmd.arg("-drive").arg(format!(
                 "if=pflash,format=raw,unit=0,file={},readonly=on",
                 code.display()
@@ -70,7 +71,8 @@ fn main() {
             ));
         }
         BootMode::Bios => {
-            cmd.arg("-drive").arg(format!("format=raw,file={bios_path}"));
+            cmd.arg("-drive")
+                .arg(format!("format=raw,file={bios_path}"));
         }
     }
 

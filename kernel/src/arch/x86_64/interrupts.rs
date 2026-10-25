@@ -14,5 +14,7 @@ pub struct InterruptStackFrame {
 pub fn init() {
     // SAFETY: maskable interrupts stay disabled until an IDT and handlers
     // have been installed. This prevents delivery to an incomplete table.
-    unsafe { asm!("cli", options(nomem, nostack, preserves_flags)); }
+    unsafe {
+        asm!("cli", options(nomem, nostack, preserves_flags));
+    }
 }

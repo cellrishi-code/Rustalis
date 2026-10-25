@@ -59,7 +59,10 @@ impl<const FILES: usize> RamFs<FILES> {
         if self.find(path).is_some() {
             return Err(FsError::AlreadyExists);
         }
-        let slot = self.entries.iter().position(|entry| !entry.used)
+        let slot = self
+            .entries
+            .iter()
+            .position(|entry| !entry.used)
             .ok_or(FsError::NoFreeSlots)?;
         let entry = &mut self.entries[slot];
         entry.path[..path.len()].copy_from_slice(path.as_bytes());
@@ -100,8 +103,11 @@ impl<const FILES: usize> RamFs<FILES> {
 
     /// Return the path of the Nth occupied slot, for simple directory listings.
     pub fn path_at(&self, occupied_index: usize) -> Option<&str> {
-        self.entries.iter().filter(|entry| entry.used)
-            .nth(occupied_index).map(Entry::path)
+        self.entries
+            .iter()
+            .filter(|entry| entry.used)
+            .nth(occupied_index)
+            .map(Entry::path)
     }
 
     pub fn file_count(&self) -> usize {
@@ -109,7 +115,9 @@ impl<const FILES: usize> RamFs<FILES> {
     }
 
     fn find(&self, path: &str) -> Option<usize> {
-        self.entries.iter().position(|entry| entry.used && entry.path() == path)
+        self.entries
+            .iter()
+            .position(|entry| entry.used && entry.path() == path)
     }
 }
 
@@ -120,7 +128,10 @@ fn validate_path(path: &str) -> Result<&str, FsError> {
     if path.len() > MAX_PATH_BYTES {
         return Err(FsError::PathTooLong);
     }
-    if path.split('/').any(|part| part.is_empty() || part == "." || part == "..") {
+    if path
+        .split('/')
+        .any(|part| part.is_empty() || part == "." || part == "..")
+    {
         return Err(FsError::InvalidPath);
     }
     Ok(path)

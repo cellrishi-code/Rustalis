@@ -133,7 +133,10 @@ fn validate_path(path: &str) -> Result<&str, FsError> {
 
 #[cfg(test)]
 mod tests {
+    extern crate std;
+
     use super::{FsError, MAX_FILE_BYTES, MAX_PATH_BYTES, RamFs};
+    use std::format;
 
     #[test]
     fn create_write_read_and_remove() {

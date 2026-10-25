@@ -3,6 +3,8 @@ use std::env;
 use std::process::{Command, exit};
 
 const USAGE: &str = "Usage: cargo run -- [uefi|bios]";
+// Pin the firmware release so a fresh checkout does not silently change boot firmware.
+const OVMF_SOURCE: Source = Source::EDK2_STABLE202508_R1;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum BootMode {
@@ -51,7 +53,7 @@ fn main() {
 
     match mode {
         BootMode::Uefi => {
-            let prebuilt = Prebuilt::fetch(Source::LATEST, "target/ovmf").unwrap_or_else(|error| {
+            let prebuilt = Prebuilt::fetch(OVMF_SOURCE, "target/ovmf").unwrap_or_else(|error| {
                 eprintln!(
                     "rustalis: failed to obtain OVMF firmware ({error:?}).                      Check network access or the cached firmware in target/ovmf."
                 );

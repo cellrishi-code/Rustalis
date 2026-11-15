@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          components: rustfmt, clippy
+          components: llvm-tools-preview, rust-src, rustfmt, clippy
       - name: Format
         run: cargo fmt --all -- --check
       - name: Check

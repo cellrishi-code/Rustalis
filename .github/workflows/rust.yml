@@ -18,6 +18,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: llvm-tools-preview, rust-src, rustfmt, clippy
+      - name: Check documentation links
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+          python3 scripts/check_doc_links.py
       - name: Format
         run: cargo fmt --all -- --check
       - name: Check

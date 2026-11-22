@@ -25,14 +25,14 @@ jobs:
           python3 scripts/check_doc_links.py
       - name: Format
         run: cargo fmt --all -- --check
-      - name: Check host workspace
-        run: cargo check --workspace
-      - name: Cross-compile kernel
+      - name: Check host runner
+        run: cargo check -p rustalis
+      - name: Cross-compile no_std kernel
         run: cargo check -p kernel --target x86_64-unknown-none
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
-      - name: Tests
-        run: cargo test --workspace
+      - name: Clippy host runner
+        run: cargo clippy -p rustalis --all-targets -- -D warnings
+      - name: Test host runner
+        run: cargo test -p rustalis
 
   qemu:
     name: Build and boot smoke test
@@ -46,12 +46,12 @@ jobs:
       - name: Install QEMU
         run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
       - name: Build boot image
-        run: cargo build --verbose
+        run: cargo build -p rustalis --verbose
       - name: Boot BIOS image and assert serial success marker
         shell: bash
         run: |
           set +e
-          timeout --signal=TERM --kill-after=5s 20s cargo run -- bios > qemu.log 2>&1
+          timeout --signal=TERM --kill-after=5s 20s cargo run -p rustalis -- bios > qemu.log 2>&1
           status=$?
           set -e
           cat qemu.log

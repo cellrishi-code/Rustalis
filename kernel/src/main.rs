@@ -25,6 +25,12 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         arch::x86_64::idt::self_test();
         logger::info("Breakpoint exception self-test passed");
     }
+    #[cfg(feature = "divide-error-self-test")]
+    {
+        logger::info("Running divide-error exception self-test");
+        arch::x86_64::idt::divide_error_self_test();
+        logger::info("Divide-error exception self-test passed");
+    }
     let summary = memory::summarize(&boot_info.memory_regions);
     logger::info_u64("Memory regions", summary.region_count as u64);
     logger::info_u64("Usable memory bytes", summary.usable_bytes);

@@ -12,6 +12,7 @@ static IDT: Once<InterruptDescriptorTable> = Once::new();
 pub fn init() {
     let idt = IDT.call_once(|| {
         let mut idt = InterruptDescriptorTable::new();
+        idt.divide_error.set_handler_fn(divide_error_handler);
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.invalid_opcode.set_handler_fn(invalid_opcode_handler);
         idt
@@ -27,6 +28,34 @@ pub fn init() {
 #[cfg(feature = "exception-self-test")]
 pub fn self_test() {
     x86_64::instructions::interrupts::int3();
+}
+
+/// Trigger a divide-error exception for the optional integration self-test.
+///
+/// This deliberately executes an integer divide by zero. It must only be
+/// called after the IDT has been loaded and only from the self-test path.
+#[cfg(feature = "divide-error-self-test")]
+pub fn divide_error_self_test() {
+    // SAFETY: This inline assembly intentionally triggers #DE to verify the
+    // installed handler. The feature is opt-in and the handler terminates
+    // through the kernel panic path instead of returning to this instruction.
+    unsafe {
+        core::arch::asm!(
+            "div rcx",
+            inlateout("rax") 1u64 => _,
+            inlateout("rdx") 0u64 => _,
+            in("rcx") 0u64,
+            options(nostack),
+        );
+    }
+}
+
+/// Handle integer divide errors as a controlled kernel failure.
+extern "x86-interrupt" fn divide_error_handler(frame: InterruptStackFrame) -> ! {
+    crate::logger::error("DIVIDE ERROR exception (#DE)");
+    crate::logger::info_u64("Divide error RIP", frame.instruction_pointer.as_u64());
+    crate::logger::info_u64("Divide error CS", frame.code_segment.bits() as u64);
+    panic!("divide error exception");
 }
 
 /// Handle INT3/#BP without modifying the saved execution state.
@@ -58,9 +87,11 @@ mod tests {
     #[test]
     fn idt_registers_exception_handlers() {
         let mut idt = InterruptDescriptorTable::new();
+        idt.divide_error.set_handler_fn(divide_error_handler);
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.invalid_opcode.set_handler_fn(invalid_opcode_handler);
 
+        assert_ne!(idt.divide_error.handler_addr().as_u64(), 0);
         assert_ne!(idt.breakpoint.handler_addr().as_u64(), 0);
         assert_ne!(idt.invalid_opcode.handler_addr().as_u64(), 0);
     }

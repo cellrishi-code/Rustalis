@@ -4,6 +4,7 @@ members = ["kernel"]
 
 [features]
 exception-self-test = ["kernel/exception-self-test"]
+divide-error-self-test = ["kernel/divide-error-self-test"]
 
 [package]
 name = "rustalis"

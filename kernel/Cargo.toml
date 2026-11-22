@@ -6,6 +6,7 @@ license = "MIT OR Apache-2.0"
 
 [features]
 exception-self-test = []
+divide-error-self-test = []
 
 [dependencies]
 bootloader_api = "0.11.17"

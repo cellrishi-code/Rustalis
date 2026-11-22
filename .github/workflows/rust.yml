@@ -18,14 +18,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: llvm-tools-preview, rust-src, rustfmt, clippy
+          targets: x86_64-unknown-none
       - name: Check documentation links
         run: |
           python3 -m unittest discover -s scripts -p 'test_*.py'
           python3 scripts/check_doc_links.py
       - name: Format
         run: cargo fmt --all -- --check
-      - name: Check
+      - name: Check host workspace
         run: cargo check --workspace
+      - name: Cross-compile kernel
+        run: cargo check -p kernel --target x86_64-unknown-none
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Tests
@@ -64,3 +67,11 @@ jobs:
             echo "QEMU runner exited unexpectedly with status $status."
             exit "$status"
           fi
+      - name: Preserve QEMU diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: qemu.log
+          if-no-files-found: warn
+          retention-days: 7
